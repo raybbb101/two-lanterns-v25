@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ふたつの灯 v2.5 — Two Lanterns</title>
+<meta name="description" content="二人で協力して地下迷宮を進む、オンライン協力アクション。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@600;800&family=Zen+Kaku+Gothic+New:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+</head>
+<body>
+<canvas id="game"></canvas>
+
+<!-- タイトル -->
+<section id="title">
+  <div class="tbg"></div>
+  <canvas id="titleArt"></canvas>
+  <div class="tpanel">
+    <h1><span class="jp">ふたつの灯</span><span class="en">TWO LANTERNS · V2.5</span></h1>
+    <p class="lead">灯りを掲げ、ふたりで地下迷宮の底へ。</p>
+    <label class="field"><span>名前</span><input id="nameInput" maxlength="10" placeholder="旅人" autocomplete="off"></label>
+    <div class="field"><span>難易度</span><div id="diffPick"></div><small id="diffDesc"></small></div>
+    <div class="field"><span>ジョブ（あとから変更できません）</span><div id="jobPick"></div><small id="jobDesc"></small>
+      <div class="saveRow"><span id="saveInfo"></span><button type="button" id="btnExport" class="hidden">書き出し</button><button type="button" id="btnImport">読み込み</button><button type="button" id="btnReset" class="hidden">最初から</button></div></div>
+    <div class="row">
+      <button id="btnHost" class="primary">ルームを作る</button>
+      <button id="btnSolo">ひとりで遊ぶ</button>
+    </div>
+    <div class="or"><span>相方のルームに入る</span></div>
+    <div class="row join">
+      <input id="codeInput" maxlength="6" placeholder="コード" autocomplete="off" spellcheck="false">
+      <button id="btnJoin">参加する</button>
+    </div>
+    <p id="titleStatus"></p>
+    <p class="keys"><kbd>WASD</kbd> 移動　<kbd>左クリック</kbd> 攻撃（長押しで重撃）　<kbd>Space</kbd> 回避　<kbd>Q</kbd><kbd>E</kbd><kbd>R</kbd><kbd>C</kbd> スキル　<kbd>F</kbd> 拾う　<kbd>Tab</kbd> キャラクター</p>
+  </div>
+</section>
+
+<!-- HUD -->
+<section id="hud" class="hidden">
+  <div id="hurtFx"></div>
+  <div id="floorBox">
+    <div id="floorNum">第 1 層</div>
+    <div id="floorName"></div>
+    <div id="diffName"></div>
+    <div id="remain"></div>
+  </div>
+  <div id="rightTop">
+    <canvas id="minimap" width="200" height="164"></canvas>
+    <div id="roomBox" class="hidden">
+      <div class="rc"><span>ルームコード</span><b id="roomCode">-----</b><button id="copyCode" title="コピー">コピー</button></div>
+      <div id="roomStatus"></div>
+    </div>
+  </div>
+  <div id="bossBar" class="hidden"><div id="bossName"></div><div class="bar"><div id="bossFill"></div></div></div>
+  <div id="toasts"></div>
+
+  <div id="party">
+    <div class="pframe" id="pMe"><div class="phead"><span class="pname"></span><span class="plv"></span></div><div class="hp"><div class="hpFill"></div><div class="shFill"></div><span class="hpText"></span></div></div>
+    <div class="pframe ally hidden" id="pAlly"><div class="phead"><span class="pname"></span><span class="plv"></span></div><div class="hp"><div class="hpFill"></div><div class="shFill"></div><span class="hpText"></span></div></div>
+  </div>
+
+  <div id="prompt" class="hidden"></div>
+  <div id="actionBar">
+    <div id="xp"><div id="xpFill"></div><span id="xpText"></span></div>
+    <div class="slots">
+      <div class="slot" id="slotW"><img class="hidden"><span class="cdnum"></span><kbd>左</kbd></div>
+      <div class="slot" id="slotQ"><img class="hidden"><span class="cdnum"></span><kbd>Q</kbd></div>
+      <div class="slot" id="slotE"><img class="hidden"><span class="cdnum"></span><kbd>E</kbd></div>
+      <div class="slot" id="slotR"><img class="hidden"><span class="cdnum"></span><kbd>R</kbd></div>
+      <div class="slot" id="slotC"><img class="hidden"><span class="cdnum"></span><kbd>C</kbd></div>
+      <div class="slot dodge" id="slotD"><img class="hidden"><svg viewBox="0 0 24 24"><path d="M4 16c4-1 6-4 7-8M9 18c4-1 7-4 8-9M15 19c3-1 5-3 6-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><span class="cdnum"></span><kbd>Space</kbd></div>
+    </div>
+  </div>
+  <div id="menuBtns">
+    <button id="btnChar"><kbd>Tab</kbd> キャラクター</button>
+    <button id="btnHelp"><kbd>H</kbd> 操作</button>
+    <button id="btnMute" title="音 (M)">♪</button>
+  </div>
+  <div id="downOverlay" class="hidden"><span id="downText"></span></div>
+</section>
+
+<!-- キャラクター画面 -->
+<section id="charScreen" class="hidden">
+  <div class="cpanel">
+    <header>
+      <h2>キャラクター</h2>
+      <nav id="charTabs">
+        <button data-tab="status">ステータス</button>
+        <button data-tab="weapon">武器・合成</button>
+        <button data-tab="gear">防具</button>
+        <button data-tab="pet">ペット</button>
+        <button data-tab="skill">スキル</button>
+        <button data-tab="tree">スキルツリー</button>
+      </nav>
+      <button id="charClose">閉じる <kbd>Tab</kbd></button>
+    </header>
+    <p id="charNote"></p>
+    <div id="charBody"></div>
+  </div>
+</section>
+
+<section id="shop" class="hidden">
+  <div class="hpanel shoppanel">
+    <h2>旅の商人</h2>
+    <p class="muted small" id="shopCoins"></p>
+    <div id="shopBody"></div>
+    <button id="shopClose">閉じる</button>
+  </div>
+</section>
+
+<section id="riddle" class="hidden">
+  <div class="hpanel">
+    <h2 id="riddleTitle">石碑のなぞなぞ</h2>
+    <p id="riddleQ"></p>
+    <div id="riddleChoices"></div>
+    <p class="muted small" id="riddleNote"></p>
+    <button id="riddleClose">あとで</button>
+  </div>
+</section>
+
+<section id="help" class="hidden">
+  <div class="hpanel">
+    <h2>遊び方</h2>
+    <ul>
+      <li><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> 移動　・　マウスで狙う</li>
+      <li><kbd>左クリック</kbd>（長押しで連続）攻撃</li>
+      <li><kbd>Space</kbd> / <kbd>右クリック</kbd> 回避（回避中は無敵）</li>
+      <li><kbd>Q</kbd> <kbd>E</kbd> <kbd>R</kbd> <kbd>C</kbd> スキル（近くの敵を自動で狙います）</li>
+      <li><kbd>F</kbd> 武器や巻物を拾う・宝箱を開ける</li>
+      <li><kbd>Tab</kbd> キャラクター画面（武器の合成・防具・スキルツリー）。一人のときは開いている間ゲームが止まります</li>
+      <li><kbd>M</kbd> 音のオン／オフ</li>
+    </ul>
+    <p>フロアの魔物をすべて倒すと <b>転移陣</b> が開きます。二人で乗ると次の層へ。3 層ごとに番人が待っています。</p>
+    <p>倒れても、相方がそばに立てば復活できます。二人とも倒れるとフロアの最初から。</p>
+    <p>赤い床の模様は敵の攻撃の予兆。回避で抜けよう。</p>
+    <p>石碑のなぞなぞや光る台座を見つけたら解いてみよう。報酬がもらえます。</p>
+    <button id="helpClose">閉じる</button>
+  </div>
+</section>
+
+<section id="fade"><div class="fn"></div><div class="fname"></div></section>
+<section id="waitOverlay" class="hidden"><div class="spinner"></div><p>ホストと同期しています…</p></section>
+<section id="fatal" class="hidden"><div class="hpanel"><p id="fatalMsg"></p><button id="fatalBtn" class="primary">タイトルへ戻る</button></div></section>
+
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
