@@ -418,8 +418,8 @@ export class UI {
     } else if (act === 'fuse') this.fuse(b.dataset.k);
     else if (act === 'gfuse') this.fuseArmor(+b.dataset.r);
     else if (act === 'sell') this.sellSel();
-    else if (act === 'hatch') this.hatch(b.dataset.id);
-    else if (act === 'pet') this.setPet(b.dataset.id);
+    else if (act === 'hatch') this.hatch(b.dataset.egg);
+    else if (act === 'pet') this.setPet(b.dataset.pet);
     else if (act === 'learn') this.learn(b.dataset.node);
     else if (act === 'reset') this.resetTree();
   }
@@ -470,10 +470,10 @@ export class UI {
       const S = PETS[p.sp], E = ELEMENTS[p.el], on = me.petId === p.id;
       return `<div class="petcard ${on ? 'on' : ''}"><img src="${petIcon(p.sp, p.el)}"><div><div class="wname" style="color:${E.color}">${esc(p.name)} <span class="muted">Lv ${p.lvl}</span></div>
         <dl class="stats"><dt>種族</dt><dd>${S.name}</dd><dt>属性</dt><dd style="color:${E.color}">${E.name}（${E.desc}）</dd><dt>攻撃力</dt><dd>${petDamage(p, g.floor)}</dd><dt>攻撃間隔</dt><dd>${S.rate} 秒</dd><dt>戦い方</dt><dd>${S.range ? '遠くから撃つ' : '接近して戦う'}${S.fly ? '・飛行' : ''}</dd></dl>
-        <div class="affix">◆ スキル「${S.skill.name}」：${S.skill.desc}</div><div class="acts"><button data-act="pet" data-id="${p.id}" class="${on ? '' : 'primary'}">${on ? '休ませる' : 'お供にする'}</button></div></div></div>`;
+        <div class="affix">◆ スキル「${S.skill.name}」：${S.skill.desc}</div><div class="acts"><button data-act="pet" data-pet="${p.id}" class="${on ? '' : 'primary'}">${on ? '休ませる' : 'お供にする'}</button></div></div></div>`;
     }).join('');
     return `<div class="tabcols c2"><div><h3>ペット <span>${me.pets.length}</span></h3>${cards || '<p class="muted small">まだペットはいません。商人の特別コーナーや隠し部屋で卵を手に入れて孵しましょう。</p>'}</div>
-      <div><h3>卵 <span>${eggs.length}</span></h3>${eggs.map((e) => `<div class="fuse"><img src="${itemIcon(e, 48)}"><div>${esc(e.name)}<small>孵すまで中身は分かりません</small></div><button data-act="hatch" data-id="${e.id}">孵す</button></div>`).join('') || '<p class="muted small">卵はありません。</p>'}
+      <div><h3>卵 <span>${eggs.length}</span></h3>${eggs.map((e) => `<div class="fuse"><img src="${itemIcon(e, 48)}"><div>${esc(e.name)}<small>孵すまで中身は分かりません</small></div><button data-act="hatch" data-egg="${e.id}">孵す</button></div>`).join('') || '<p class="muted small">卵はありません。</p>'}
       <p class="muted small" style="margin-top:12px">お供のペットは一緒に戦い、階層を進むとレベルが上がります。種族が戦い方とスキルを、属性が色と追加効果を決めます。</p></div></div>`;
   }
   hatch(id) {

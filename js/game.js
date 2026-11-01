@@ -604,9 +604,11 @@ export class Game {
       if (me.holding) {
         if (this.mouse.down) me.holdT += dt;
         else {
+          // 溜まっていたかは、離す前の状態で判定する
+          const ready = this.chargeReady();
           me.holding = false;
-          if (this.chargeReady()) this.heavyAttack(); else me.queued = true;
           me.holdT = 0;
+          if (ready) { me.queued = false; this.heavyAttack(); } else me.queued = true;
         }
       }
       if (me.queued && me.atkCd <= 0 && me.dodgeT <= 0 && me.dashT <= 0) { me.queued = false; this.attack(); }
