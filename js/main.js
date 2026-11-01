@@ -170,3 +170,5 @@ function titleLoop(now) {
   requestAnimationFrame(titleLoop);
 }
 requestAnimationFrame(titleLoop);
+// 読み込めたので、やり直しの回数を戻す
+try { sessionStorage.removeItem('ftn25-retry'); } catch (e) { /* 無視 */ }

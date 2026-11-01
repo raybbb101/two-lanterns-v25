@@ -146,6 +146,30 @@
 <section id="waitOverlay" class="hidden"><div class="spinner"></div><p>ホストと同期しています…</p></section>
 <section id="fatal" class="hidden"><div class="hpanel"><p id="fatalMsg"></p><button id="fatalBtn" class="primary">タイトルへ戻る</button></div></section>
 
-<script type="module" src="js/main.js"></script>
+<script>
+// ファイルが 1 つでも読めないとゲームが動かないので、失敗したら自動で読み込み直す
+function gameLoadFailed() {
+  var KEY = 'ftn25-retry', MAX = 3, n = 0, ok = true;
+  try { n = +sessionStorage.getItem(KEY) || 0; } catch (e) { ok = false; }
+  var st = document.getElementById('titleStatus');
+  st.classList.add('err');
+  if (ok && n < MAX) {
+    sessionStorage.setItem(KEY, n + 1);
+    st.textContent = '読み込みに失敗しました。やり直しています…（' + (n + 1) + ' / ' + MAX + '）';
+    setTimeout(function () { location.reload(); }, 1200 * Math.pow(2, n));
+    return;
+  }
+  try { sessionStorage.removeItem(KEY); } catch (e) { /* 無視 */ }
+  st.textContent = 'ゲームを読み込めませんでした。少し待ってから、もう一度お試しください。';
+  var b = document.createElement('button');
+  b.type = 'button';
+  b.textContent = '再読み込み';
+  b.style.marginTop = '8px';
+  b.onclick = function () { location.reload(); };
+  st.appendChild(document.createElement('br'));
+  st.appendChild(b);
+}
+</script>
+<script type="module" src="js/main.js" onerror="gameLoadFailed()"></script>
 </body>
 </html>
