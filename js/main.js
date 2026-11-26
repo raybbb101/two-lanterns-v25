@@ -6,6 +6,7 @@ import { makeWeapon, DIFFS, DIFF_KEYS } from './data.js';
 import { JOBS, JOB_KEYS } from './jobs.js';
 import { loadSave, writeSave, deleteSave, exportSave, importSave } from './save.js';
 import { rand, TAU } from './util.js';
+import { isTouchDevice, isStandalone, canFullscreen, enterFullscreen } from './touch.js';
 
 const $ = (id) => document.getElementById(id);
 let game = null;
@@ -25,6 +26,9 @@ const playerName = () => {
 const status = (msg, err) => { const s = $('titleStatus'); s.textContent = msg; s.classList.toggle('err', !!err); };
 const busy = (on) => document.querySelectorAll('#title button').forEach((b) => (b.disabled = on));
 
+const TOUCH = isTouchDevice();
+document.body.classList.toggle('touch', TOUCH);
+
 function start(mode, net, code) {
   titleRun = false;
   game = new Game($('game'), { mode, net, code, name: playerName(), job: selJob, diff: selDiff, onExit: exitToTitle });
@@ -41,8 +45,11 @@ function exitToTitle() {
   requestAnimationFrame(titleLoop);
 }
 
-$('btnSolo').onclick = () => { initAudio(); start('solo'); };
+// スマホではゲームを始めるときに全画面にする（押した瞬間でないと許可されない）
+const goFull = () => { if (TOUCH && !isStandalone() && canFullscreen()) enterFullscreen(); };
+$('btnSolo').onclick = () => { goFull(); initAudio(); start('solo'); };
 $('btnHost').onclick = () => {
+  goFull();
   initAudio();
   busy(true);
   status('ルームを作成しています…');
@@ -52,6 +59,7 @@ $('btnHost').onclick = () => {
 const join = () => {
   const code = $('codeInput').value.trim().toUpperCase();
   if (code.length < 4) { status('ルームコードを入力してください', true); return; }
+  goFull();
   initAudio();
   busy(true);
   status('ルームに接続しています…');
@@ -172,3 +180,37 @@ function titleLoop(now) {
 requestAnimationFrame(titleLoop);
 // 読み込めたので、やり直しの回数を戻す
 try { sessionStorage.removeItem('ftn25-retry'); } catch (e) { /* 無視 */ }
+
+// ---------- 全画面・ホーム画面に追加 ----------
+if (TOUCH && canFullscreen() && !isStandalone()) {
+  $('btnTitleFull').classList.remove('hidden');
+  $('btnTitleFull').onclick = () => enterFullscreen();
+}
+let installEvt = null;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  installEvt = e;
+  $('btnInstall').classList.remove('hidden');
+});
+window.addEventListener('appinstalled', () => { installEvt = null; $('btnInstall').classList.add('hidden'); status('ホーム画面に追加しました。次からはアイコンから全画面で遊べます。'); });
+const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+if (isIOS && !isStandalone()) $('btnInstall').classList.remove('hidden');
+$('btnInstall').onclick = async () => {
+  if (installEvt) {
+    installEvt.prompt();
+    try { await installEvt.userChoice; } catch (e) { /* 無視 */ }
+    installEvt = null;
+    $('btnInstall').classList.add('hidden');
+    return;
+  }
+  const h = $('installHint');
+  h.textContent = isIOS
+    ? 'Safari の下にある共有ボタン（□に↑）→「ホーム画面に追加」を選んでください。ホーム画面のアイコンから開くと全画面で遊べます。'
+    : 'ブラウザのメニューから「ホーム画面に追加」または「アプリをインストール」を選んでください。';
+  h.classList.toggle('hidden');
+};
+
+// オフラインでも開けるようにする
+if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+  navigator.serviceWorker.register('sw.js').catch(() => { /* 対応していないときは何もしない */ });
+}

@@ -7,6 +7,7 @@ import { JOBS, startKit, computeStats, skillLevels, migrateTree } from './jobs.j
 import { sfx } from './audio.js';
 import { UI } from './ui.js';
 import { loadSave, writeSave } from './save.js';
+import { TouchControls, isTouchDevice } from './touch.js';
 
 const STATES = ['idle', 'chase', 'wind', 'atk', 'rec'];
 const PKINDS = ['arrow', 'bolt', 'fireball', 'eorb', 'rock', 'lance', 'bluefire', 'ethorn', 'evoid', 'acid', 'orb', 'void', 'uwave'];
@@ -70,6 +71,7 @@ export class Game {
 
     this.pix = new PixRenderer(this);
     this.ui = new UI(this);
+    this.touch = isTouchDevice() ? new TouchControls(this) : null;
     this.bindInput();
     this.resize();
     this.saveT = 5;
@@ -166,6 +168,7 @@ export class Game {
     window.removeEventListener('mouseup', this._mu);
     window.removeEventListener('blur', this._blur);
     window.removeEventListener('resize', this._onResize);
+    if (this.touch) this.touch.destroy();
     if (this.net) this.net.destroy();
     this.ui.destroy();
   }
@@ -526,11 +529,23 @@ export class Game {
     const me = this.me, K = this.keys;
     const m = this.map;
     // 照準（マウス → ワールド座標）
-    const wx = this.cam.x + (this.mouse.x * this.dpr - this.cv.width / 2) / this.zoom;
-    const wy = this.cam.y + (this.mouse.y * this.dpr - this.cv.height / 2) / this.zoom;
-    this.mouseWorld = { x: wx, y: wy };
-    if (me.aimLock > 0) { me.aimLock -= dt; me.aim = me.lockA; }
-    else if (!me.down) me.aim = Math.atan2(wy - (me.y - 18), wx - me.x);
+    const tv = this.touch && this.touch.vec;
+    if (tv) {
+      // タッチ：近くの敵を自動で狙い、いなければ歩く方向を向く
+      if (!me.down && me.aimLock <= 0) {
+        const tgt = this.nearestEnemy(me.x, me.y, 420);
+        if (tgt) me.aim = Math.atan2(tgt.y - me.y, tgt.x - me.x);
+        else if (tv.x || tv.y) me.aim = Math.atan2(tv.y, tv.x);
+      }
+      this.mouseWorld = { x: me.x + Math.cos(me.aim) * 200, y: me.y + Math.sin(me.aim) * 200 };
+      if (me.aimLock > 0) { me.aimLock -= dt; me.aim = me.lockA; }
+    } else {
+      const wx = this.cam.x + (this.mouse.x * this.dpr - this.cv.width / 2) / this.zoom;
+      const wy = this.cam.y + (this.mouse.y * this.dpr - this.cv.height / 2) / this.zoom;
+      this.mouseWorld = { x: wx, y: wy };
+      if (me.aimLock > 0) { me.aimLock -= dt; me.aim = me.lockA; }
+      else if (!me.down) me.aim = Math.atan2(wy - (me.y - 18), wx - me.x);
+    }
 
     for (const id in me.cds) if (me.cds[id] > 0) me.cds[id] -= dt;
     if (me.inv > 0) me.inv -= dt;
@@ -557,8 +572,9 @@ export class Game {
     if (K.has('s') || K.has('arrowdown')) iy += 1;
     if (K.has('a') || K.has('arrowleft')) ix -= 1;
     if (K.has('d') || K.has('arrowright')) ix += 1;
-    const il = Math.hypot(ix, iy);
+    let il = Math.hypot(ix, iy);
     if (il) { ix /= il; iy /= il; }
+    else if (tv && (tv.x || tv.y)) { ix = tv.x; iy = tv.y; il = Math.hypot(ix, iy); }
     const busy = this.ui.modalOpen;
     if (me.faceHold > 0) me.faceHold -= dt;
     this.updateFacing(me, dt, me.dodgeT > 0 || me.dashT > 0 ? Math.atan2(me.dvy, me.dvx) : il ? Math.atan2(iy, ix) : null, me.faceHold > 0);

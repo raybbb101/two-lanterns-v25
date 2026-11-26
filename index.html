@@ -2,7 +2,15 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#0b0a0e">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ふたつの灯">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <title>ふたつの灯 v2.5 — Two Lanterns</title>
 <meta name="description" content="二人で協力して地下迷宮を進む、オンライン協力アクション。">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -35,7 +43,13 @@
       <button id="btnJoin">参加する</button>
     </div>
     <p id="titleStatus"></p>
-    <p class="keys"><kbd>WASD</kbd> 移動　<kbd>左クリック</kbd> 攻撃（長押しで重撃）　<kbd>Space</kbd> 回避　<kbd>Q</kbd><kbd>E</kbd><kbd>R</kbd><kbd>C</kbd> スキル　<kbd>F</kbd> 拾う　<kbd>Tab</kbd> キャラクター</p>
+    <div class="row appRow">
+      <button type="button" id="btnTitleFull" class="hidden">全画面で遊ぶ</button>
+      <button type="button" id="btnInstall" class="hidden">ホーム画面に追加</button>
+    </div>
+    <p id="installHint" class="hidden"></p>
+    <p class="keys touchHint">左半分をなぞって移動　右下のボタンで攻撃（長押しで重撃）・回避・スキル　<b>拾う・開ける</b>は画面下の案内をタップ</p>
+    <p class="keys mouseHint"><kbd>WASD</kbd> 移動　<kbd>左クリック</kbd> 攻撃（長押しで重撃）　<kbd>Space</kbd> 回避　<kbd>Q</kbd><kbd>E</kbd><kbd>R</kbd><kbd>C</kbd> スキル　<kbd>F</kbd> 拾う　<kbd>Tab</kbd> キャラクター</p>
   </div>
 </section>
 
@@ -63,6 +77,7 @@
     <div class="pframe ally hidden" id="pAlly"><div class="phead"><span class="pname"></span><span class="plv"></span></div><div class="hp"><div class="hpFill"></div><div class="shFill"></div><span class="hpText"></span></div></div>
   </div>
 
+  <div id="touchPad"><div id="stickBase"><div id="stickKnob"></div></div></div>
   <div id="prompt" class="hidden"></div>
   <div id="actionBar">
     <div id="xp"><div id="xpFill"></div><span id="xpText"></span></div>
@@ -79,6 +94,7 @@
     <button id="btnChar"><kbd>Tab</kbd> キャラクター</button>
     <button id="btnHelp"><kbd>H</kbd> 操作</button>
     <button id="btnMute" title="音 (M)">♪</button>
+    <button id="btnFull" class="hidden" title="全画面">⛶</button>
   </div>
   <div id="downOverlay" class="hidden"><span id="downText"></span></div>
 </section>
@@ -125,7 +141,14 @@
 <section id="help" class="hidden">
   <div class="hpanel">
     <h2>遊び方</h2>
-    <ul>
+    <ul class="touchHint">
+      <li>画面の左半分を指でなぞって移動（近くの敵は自動で狙います）</li>
+      <li>右下の大きいボタンで攻撃。長押しで溜めて重撃</li>
+      <li>小さいボタンで回避（無敵）とスキル</li>
+      <li>拾う・宝箱を開けるときは、画面下に出る案内をタップ</li>
+      <li>右上のボタンでキャラクター画面・音・全画面</li>
+    </ul>
+    <ul class="mouseHint">
       <li><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> 移動　・　マウスで狙う</li>
       <li><kbd>左クリック</kbd>（長押しで連続）攻撃</li>
       <li><kbd>Space</kbd> / <kbd>右クリック</kbd> 回避（回避中は無敵）</li>

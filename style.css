@@ -297,3 +297,90 @@ canvas#game, #titleArt, #portrait { image-rendering: pixelated; }
 .petcard img { width: 96px; height: 96px; image-rendering: pixelated; }
 .chargebar { position: fixed; }
 #fade.clear { background: transparent !important; }
+
+/* ---------- スマホ・タブレット（タッチ操作） ---------- */
+#touchPad, #stickBase { display: none; }
+.touchHint { display: none; }
+body.touch .touchHint { display: block; }
+body.touch .mouseHint { display: none; }
+#installHint { margin: 8px 0 0; font-size: 12px; color: var(--ink-2); line-height: 1.7; }
+.appRow { margin-top: 10px; }
+.appRow button { flex: 1; font-size: 13px; padding: 8px 10px; }
+body.touch { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; touch-action: manipulation; }
+body.touch input { -webkit-user-select: text; user-select: text; }
+body.touch canvas#game { touch-action: none; }
+body.touch #hud kbd { display: none; }
+body.touch #touchPad { display: block; position: absolute; left: 0; top: 0; bottom: 0; width: 52%; pointer-events: auto; touch-action: none; }
+#stickBase { position: fixed; width: 124px; height: 124px; margin: -62px 0 0 -62px; border-radius: 50%; border: 2px solid rgba(232, 200, 120, .35); background: radial-gradient(rgba(20, 16, 22, .35), rgba(20, 16, 22, .55)); pointer-events: none; }
+body.touch #stickBase.on { display: block; }
+#stickKnob { position: absolute; left: 50%; top: 50%; width: 56px; height: 56px; border-radius: 50%; transform: translate(-50%, -50%); background: radial-gradient(circle at 40% 35%, #e8c878, #8a5f22); box-shadow: 0 0 18px rgba(255, 170, 80, .45); }
+
+body.touch #actionBar { left: auto; right: env(safe-area-inset-right); bottom: env(safe-area-inset-bottom); transform: none; width: 0; height: 0; display: block; }
+body.touch #xp { position: fixed; left: 50%; bottom: calc(4px + env(safe-area-inset-bottom)); transform: translateX(-50%); width: 30vw; height: 5px; }
+body.touch .slot { position: absolute; border-radius: 50%; pointer-events: auto; touch-action: none; background: radial-gradient(circle at 50% 35%, rgba(42, 36, 48, .85), rgba(18, 16, 20, .85)); }
+body.touch .slot::after { border-radius: 50%; }
+body.touch .slot img { width: 72%; height: 72%; pointer-events: none; }
+body.touch .slot.empty { opacity: .3; }
+body.touch .slot.press { filter: brightness(1.5); transform: scale(.94); }
+body.touch #slotW { border: 2px solid rgba(232, 200, 120, .7); }
+body.touch #slotW.empty { opacity: .45; }
+body.touch #slotW::before { content: '攻撃'; position: absolute; bottom: 6px; font-size: 10px; color: var(--ink-2); z-index: 2; text-shadow: 0 1px 2px #000; }
+body.touch #slotW img:not(.hidden) ~ .cdnum { display: none; }
+
+body.touch #prompt { pointer-events: auto; bottom: calc(18px + env(safe-area-inset-bottom)); left: 50%; padding: 11px 20px; font-size: 15px; font-weight: 700; border-color: var(--brass-hi); background: rgba(40, 32, 20, .92); box-shadow: 0 0 16px rgba(232, 200, 120, .35); touch-action: none; }
+body.touch #prompt::before { content: '▶ '; color: var(--brass-hi); }
+
+body.touch #floorBox { top: calc(8px + env(safe-area-inset-top)); left: calc(12px + env(safe-area-inset-left)); }
+body.touch #floorNum { font-size: 18px; }
+body.touch #floorName, body.touch #diffName { font-size: 10px; }
+body.touch #remain { margin-top: 2px; font-size: 11px; }
+body.touch #party { position: static; margin-top: 6px; width: 170px; gap: 4px; text-shadow: none; }
+body.touch .pframe { padding: 4px 7px 6px; }
+body.touch .phead { font-size: 11px; margin-bottom: 3px; }
+body.touch .hp { height: 11px; }
+body.touch .hpText { font-size: 9px; line-height: 10px; }
+body.touch .pframe.ally { transform-origin: left top; }
+body.touch #rightTop { top: calc(8px + env(safe-area-inset-top)); right: calc(10px + env(safe-area-inset-right)); gap: 4px; }
+body.touch #minimap { width: 116px; height: 95px; }
+body.touch #roomBox { width: 116px; padding: 4px 6px; }
+body.touch #roomBox .rc { flex-wrap: wrap; gap: 2px 6px; }
+body.touch #roomBox .rc b { font-size: 14px; }
+body.touch #menuBtns { top: calc(8px + env(safe-area-inset-top)); bottom: auto; right: calc(136px + env(safe-area-inset-right)); gap: 6px; }
+body.touch #menuBtns button { padding: 8px 11px; font-size: 13px; }
+body.touch #bossBar { top: calc(46px + env(safe-area-inset-top)); width: 40vw; }
+body.touch #bossName { font-size: 13px; margin-bottom: 3px; }
+body.touch #bossBar .bar { height: 8px; }
+body.touch #toasts { top: calc(84px + env(safe-area-inset-top)); width: 46vw; }
+body.touch .toast { font-size: 12px; padding: 4px 10px 4px 8px; }
+body.touch .toast img { width: 22px; height: 22px; }
+body.touch .cpanel, body.touch .shoppanel { max-height: 94vh; max-height: 94dvh; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
+body.touch .cpanel header { flex-wrap: wrap; gap: 8px; padding: 10px 14px; }
+body.touch #charTabs { display: flex; overflow-x: auto; gap: 4px; max-width: 100%; }
+body.touch #charTabs button { white-space: nowrap; padding: 7px 10px; }
+body.touch .hpanel { max-height: 92vh; max-height: 92dvh; overflow: auto; padding: 16px 18px; }
+body.touch #downOverlay span { margin-top: 10vh; }
+
+/* 縦持ちのとき */
+@media (orientation: portrait) {
+  body.touch #menuBtns { top: calc(112px + env(safe-area-inset-top)); right: calc(10px + env(safe-area-inset-right)); flex-direction: column; align-items: flex-end; }
+  body.touch #toasts { width: 80vw; top: calc(160px + env(safe-area-inset-top)); }
+  body.touch #bossBar { width: 60vw; top: calc(150px + env(safe-area-inset-top)); }
+  body.touch #xp { width: 50vw; }
+}
+/* 背の低い画面（スマホの横持ち）ではタイトルを詰める */
+@media (max-height: 520px) {
+  #title { padding: 10px 16px; }
+  #titleArt { height: 26vh; }
+  .tpanel { padding: 14px 18px 12px; }
+  .tpanel h1 .jp { font-size: 30px; }
+  .tpanel h1 .en { margin-top: 4px; }
+  .lead { margin: 4px 0 6px; font-size: 13px; }
+}
+@media (max-height: 520px) and (min-width: 640px) {
+  #title { grid-template-columns: 0.8fr minmax(320px, 480px); align-items: start; }
+  #titleArt { height: 90vh; position: sticky; top: 0; }
+}
+@media (max-width: 900px) {
+  #portrait { display: block; max-width: 200px; margin: 0 auto; }
+  .tabcols > div { padding: 12px 14px 16px; }
+}

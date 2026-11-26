@@ -130,7 +130,8 @@ export class PixRenderer {
 
   resize() {
     const cv = this.g.cv;
-    const s = Math.max(2, Math.round(cv.height / 330));
+    // タッチ端末の縦持ちでは横幅に合わせて小さめに描く
+    const s = Math.max(2, Math.round(this.g.touch ? Math.min(cv.height / 330, cv.width / 520) : cv.height / 330));
     this.s = s;
     this.VW = Math.ceil(cv.width / s);
     this.VH = Math.ceil(cv.height / s);
